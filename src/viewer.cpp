@@ -73,7 +73,9 @@ void Viewer::reloadShaders() {
 
 
 void Viewer::drawScene(GLuint id) {
-
+  // move camera
+  vec3 camPos(0,- 3,0);
+  //glm::lookAt(camPos,)
   // send uniform variables 
   glUniformMatrix4fv(glGetUniformLocation(id,"mdvMat"),1,GL_FALSE,&(_cam->mdvMatrix()[0][0]));
   glUniformMatrix4fv(glGetUniformLocation(id,"projMat"),1,GL_FALSE,&(_cam->projMatrix()[0][0]));
@@ -248,3 +250,6 @@ void Viewer::initializeGL() {
   //_timer->start();
 }
 
+float riverFLow(float t){
+    return = .5*sin(t*10);
+}

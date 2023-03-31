@@ -7,3 +7,6 @@
     - Step(e1, x)
     - Tan/Cos/Sin
     - Atan/Acos/Asin
+## camera
+    - glm::lookAt(pos, centre, up=(0,1,0))
+    - glm::perspective(fw=45,mind, maxd, aspect ration)

@@ -49,13 +49,24 @@ float pnoise(in vec2 p,in float amplitude,in float frequency,in float persistenc
 
 
 float computeHeight(in vec2 p) {
-  
+  float height;
   // version plan
-  return 0.0;
+  //return 0.0;
   
   // version sinus statique
-  //return 0.5*sin(p.x*10);
+  // sin param
+  float offset = -(3.1415)/2.;
+  float periode = 2.5;
 
+  float max_height = 0;
+  float sin_height = .6;
+  // calculation
+  //p.x =  0.2 + sin_height*sin(offset + p.y * periode);
+  float sin_val = 0.2 + sin_height*sin(offset + p.x * periode);
+  height = min(sin_val, max_height);
+  vec2 point = vec2(p.x, p.y + motion.x);
+  height += pnoise(point,.05,10,.5,2);
+  return height;
   // version sinus animé 
   //return 0.2*sin((p.x+motion.x)*30);
 }
@@ -76,11 +87,12 @@ vec3 computeNormal(in vec2 p) {
 }
 
 void main() {
-
   float h = computeHeight(position.xy);
   vec3  n = computeNormal(position.xy);
-  
-  vec3 p = vec3(position.xy,h);
+
+  float x = position.x + .5*sin(motion.x*10 +position.y*3);
+  vec3 p = vec3(x, position.y,h);
+
   
   gl_Position =  projMat*mdvMat*vec4(p,1);
   normalView  = normalize(normalMat*n);
