@@ -11,11 +11,12 @@ Viewer::Viewer(char *,const QGLFormat &format)
     _timer(new QTimer(this)),
     _light(glm::vec3(0,0,1)),
     _motion(glm::vec3(0,0,0)),
-    _x(.0),
+    _y(.0),
+    _speed_y(.05),
     _camX(0),
-    _camY(-2),
+    _camY(-1.001),
     _camZ(2),
-    _speed_x(.05),
+    _lookAtX(0),
     _mode(false),
     _ndResol(512) {
 
@@ -86,7 +87,7 @@ void Viewer::drawScene(GLuint id) {
   glUniformMatrix3fv(glGetUniformLocation(id,"normalMat"),1,GL_FALSE,&(_cam->normalMatrix()[0][0]));
   glUniform3fv(glGetUniformLocation(id,"light"),1,&(_light[0]));
   glUniform3fv(glGetUniformLocation(id,"motion"),1,&(_motion[0]));
-  glUniform1f(glGetUniformLocation(id,"_x"),_x);
+  glUniform1f(glGetUniformLocation(id,"_y"),_y);
 
   // draw faces 
   glBindVertexArray(_vaoTerrain);
@@ -111,9 +112,9 @@ void Viewer::paintGL() {
   // move camera
   //glm::vec3 camPos(r,-2, 1);
     //glm::vec3 center(r/2,.5,0);
-    float r = riverFLow(_x );
+    float r = riverFlow(_y + -1);
     glm::vec3 camPos(r,_camY, _camZ);
-  glm::vec3 center(r,0,0);
+  glm::vec3 center(_lookAtX + r,0,0);
   glm::vec3 up(0, 0, 1);
   _viewMatrix = glm::lookAt(camPos, center, up);
 	float fovy = 45.0;
@@ -177,8 +178,7 @@ void Viewer::mouseMoveEvent(QMouseEvent *me) {
 void Viewer::keyPressEvent(QKeyEvent *ke) {
   const float step = 0.05;
   if(ke->key()==Qt::Key_Space) {
-      _x += _speed_x;
-      printf("Space pressed _x -> %f + %f\n", _x, _speed_x);
+      _y += _speed_y;
   }
   if(ke->key()==Qt::Key_Z) {
     glm::vec2 v = glm::vec2(glm::transpose(_cam->normalMatrix())*glm::vec3(0,0,-1))*step;
@@ -216,6 +216,22 @@ void Viewer::keyPressEvent(QKeyEvent *ke) {
     }
     if(ke->key()==Qt::Key_E) {
         _camY += .1;
+    }
+    if(ke->key()==Qt::Key_Q) {
+        _lookAtX -= .1;
+    }
+    if(ke->key()==Qt::Key_D) {
+        _lookAtX += .1;
+    }
+    if(ke->key()==Qt::Key_I) {
+        //info
+        printf("Info :\n");
+
+        float r = riverFlow(_y + _camY);
+        printf("\tCamera (r,_CamY, _CamZ) = (%f,%f,%f)\n",r ,_camY, _camZ);
+        printf("\tCamera lookAtX = %f\n",_lookAtX);
+        printf("\t_y = %f and riverflow(_y) = %f \n",_y, riverFlow(_y));
+
     }
 
 
@@ -285,6 +301,7 @@ void Viewer::initializeGL() {
   //_timer->start();
 }
 
-float Viewer::riverFLow(float t){
-    return .5*sin(t*3);
+float Viewer::riverFlow(float t){
+    //return .5*sin(t*3);
+    return .5*sin(t*3) + .2*sin(t*8) + 2*sin(t*0.2);
 }

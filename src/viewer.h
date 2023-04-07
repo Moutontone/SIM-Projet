@@ -58,13 +58,14 @@ class Viewer : public QGLWidget {
   glm::vec3 _light;  // light direction
   glm::vec3 _motion; // motion offset for the noise texture
 
-  float _x;
-  float _speed_x;
-  float riverFLow(float t);
+  float _y;
+  float _speed_y;
+  float riverFlow(float t);
 
   float _camX;
   float _camY;
   float _camZ;
+  float _lookAtX;
   glm::mat4 _viewMatrix; // view matrix
   glm::mat4 _projMatrix; // projection matrix 
   

@@ -8,6 +8,8 @@
     - Tan/Cos/Sin
     - Atan/Acos/Asin
     - smoothstep -> pour avoir 2 terrain différents d = length(p) smoothstep(0.5, 0.1, 0.5+0.1, d)
+        puis h = ùix (h1, h2, s)
+    - faire de brouillard : 
 ## camera
     - glm::lookAt(pos, centre, up=(0,1,0))
     - glm::perspective(fw=45,mind, maxd, aspect ration)

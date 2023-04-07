@@ -9,11 +9,12 @@ uniform mat4 projMat;     // projection matrix
 uniform mat3 normalMat;   // normal matrix
 uniform vec3 light;
 uniform vec3 motion;
-uniform float _x;
+uniform float _y;
 
 // out variables 
 out vec3 normalView;
 out vec3 eyeView;
+out float px;
 
 // fonctions utiles pour créer des terrains en général
 vec2 hash(vec2 p) {
@@ -49,29 +50,60 @@ float pnoise(in vec2 p,in float amplitude,in float frequency,in float persistenc
 }
 
 float riverFLow(float t){
-  return .5*sin(t*3);
+//  return .5*sin(t*3);
+  return .5*sin(t*3) + .2*sin(t*8) + 2*sin(t*0.2);
 }
 
 float computeHeight(in vec2 p) {
   float height;
+  float height1;
+  float height2;
+  float height3;
+  float height_river;
   // version plan
-  //return 0.0;
-  
-  // version sinus statique
-  // sin param
+  //  float height_left = left_height();
+//  float height_right = right_height();
+  if (p.x < -1./3.) {
+    //rive gauche
+    height = 0;
+    // variation
+    vec2 point = vec2(p.x, p.y + _y);
+    height += pnoise(point,.05,.8,.5,2);
+    height1 = height;
+    height1 = .051;
+  } else if (p.x > 1./3.) {
+    //rive droite
+    height = -.02;
+    height3 = height;
+  }
+  // lit de la rivière
   float offset = -(3.1415)/2.;
-  float periode = 2.5;
+  float periode = 10;
+  // variation de la largeur
+  periode + 3*(sin((_y+ p.y)*3) + 0.3*sin((_y+ p.y)*10));
   float max_height = 0;
-  float sin_height = .6;
+  float sin_height = .2;
   // calculation
-  //p.x =  0.2 + sin_height*sin(offset + p.y * periode);
-  float sin_val = 0.2 + sin_height*sin(offset + p.x * periode);
-  height = min(sin_val, max_height);
-  vec2 point = vec2(p.x, p.y + _x);
-  height += pnoise(point,.05,10,.5,2);
-  return height;
-  // version sinus animé 
-  //return 0.2*sin((p.x+motion.x)*30);
+  float sin_val = sin_height*sin(offset + p.x * periode);
+  height = sin_val;
+  height = min(0., height);
+  height = max(-.12, height);
+  height_river = height;
+
+  if (p.x < 0) {
+    float frontiere = -1./3.;
+    float v = .1;
+    float s = smoothstep(frontiere-v, frontiere+v, p.x);
+    height = mix(height1, height_river, s);
+    return height;
+  } if (p.x > 0){
+    float frontiere = 1./3.;
+    float v = .1;
+    float s = smoothstep(frontiere-v, frontiere+v, p.x);
+    height = mix(height_river,height3, s);
+    return height;
+  }
+  return height_river;
 }
 
 
@@ -90,11 +122,12 @@ vec3 computeNormal(in vec2 p) {
 }
 
 void main() {
+  px = position.x;
   float h = computeHeight(position.xy);
   vec3  n = computeNormal(position.xy);
 
-//  float x = position.x + .5*sin(motion.x*10 +(_x + position.y)*3);
-  float x = position.x - riverFLow(_x + position.y);
+//  float x = position.x + .5*sin(motion.x*10 +(_y + position.y)*3);
+  float x = position.x + riverFLow(_y + position.y);
   vec3 p = vec3(x, position.y,h);
 
   
