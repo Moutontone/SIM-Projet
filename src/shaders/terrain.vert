@@ -9,6 +9,7 @@ uniform mat4 projMat;     // projection matrix
 uniform mat3 normalMat;   // normal matrix
 uniform vec3 light;
 uniform vec3 motion;
+uniform float _x;
 
 // out variables 
 out vec3 normalView;
@@ -47,6 +48,9 @@ float pnoise(in vec2 p,in float amplitude,in float frequency,in float persistenc
   return n;
 }
 
+float riverFLow(float t){
+  return .5*sin(t*3);
+}
 
 float computeHeight(in vec2 p) {
   float height;
@@ -57,14 +61,13 @@ float computeHeight(in vec2 p) {
   // sin param
   float offset = -(3.1415)/2.;
   float periode = 2.5;
-
   float max_height = 0;
   float sin_height = .6;
   // calculation
   //p.x =  0.2 + sin_height*sin(offset + p.y * periode);
   float sin_val = 0.2 + sin_height*sin(offset + p.x * periode);
   height = min(sin_val, max_height);
-  vec2 point = vec2(p.x, p.y + motion.x);
+  vec2 point = vec2(p.x, p.y + _x);
   height += pnoise(point,.05,10,.5,2);
   return height;
   // version sinus animé 
@@ -90,7 +93,8 @@ void main() {
   float h = computeHeight(position.xy);
   vec3  n = computeNormal(position.xy);
 
-  float x = position.x + .5*sin(motion.x*10 +position.y*3);
+//  float x = position.x + .5*sin(motion.x*10 +(_x + position.y)*3);
+  float x = position.x - riverFLow(_x + position.y);
   vec3 p = vec3(x, position.y,h);
 
   

@@ -46,8 +46,8 @@ class Viewer : public QGLWidget {
   void createShaders();
   void deleteShaders();
   void reloadShaders();
-  
-  // drawing functions 
+
+  // drawing functions
   void drawScene(GLuint id);
 
   QTimer        *_timer;    // timer that controls the animation
@@ -56,7 +56,19 @@ class Viewer : public QGLWidget {
   Camera *_cam;    // the camera
 
   glm::vec3 _light;  // light direction
-  glm::vec3 _motion; // motion offset for the noise texture 
+  glm::vec3 _motion; // motion offset for the noise texture
+
+  float _x;
+  float _speed_x;
+  float riverFLow(float t);
+
+  float _camX;
+  float _camY;
+  float _camZ;
+  glm::mat4 _viewMatrix; // view matrix
+  glm::mat4 _projMatrix; // projection matrix 
+  
+
   bool      _mode;   // camera motion or light motion
 
   // les shaders 

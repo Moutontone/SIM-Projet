@@ -11,6 +11,11 @@ Viewer::Viewer(char *,const QGLFormat &format)
     _timer(new QTimer(this)),
     _light(glm::vec3(0,0,1)),
     _motion(glm::vec3(0,0,0)),
+    _x(.0),
+    _camX(0),
+    _camY(-2),
+    _camZ(2),
+    _speed_x(.05),
     _mode(false),
     _ndResol(512) {
 
@@ -73,15 +78,15 @@ void Viewer::reloadShaders() {
 
 
 void Viewer::drawScene(GLuint id) {
-  // move camera
-  vec3 camPos(0,- 3,0);
-  //glm::lookAt(camPos,)
-  // send uniform variables 
-  glUniformMatrix4fv(glGetUniformLocation(id,"mdvMat"),1,GL_FALSE,&(_cam->mdvMatrix()[0][0]));
-  glUniformMatrix4fv(glGetUniformLocation(id,"projMat"),1,GL_FALSE,&(_cam->projMatrix()[0][0]));
+  // send uniform variables
+  //glUniformMatrix4fv(glGetUniformLocation(id,"mdvMat"),1,GL_FALSE,&(_cam->mdvMatrix()[0][0]));
+  glUniformMatrix4fv(glGetUniformLocation(id,"mdvMat"),1,GL_FALSE,&(_viewMatrix[0][0]));
+  //glUniformMatrix4fv(glGetUniformLocation(id,"projMat"),1,GL_FALSE,&(_cam->projMatrix()[0][0]));
+  glUniformMatrix4fv(glGetUniformLocation(id,"projMat"),1,GL_FALSE,&(_projMatrix[0][0]));
   glUniformMatrix3fv(glGetUniformLocation(id,"normalMat"),1,GL_FALSE,&(_cam->normalMatrix()[0][0]));
   glUniform3fv(glGetUniformLocation(id,"light"),1,&(_light[0]));
   glUniform3fv(glGetUniformLocation(id,"motion"),1,&(_motion[0]));
+  glUniform1f(glGetUniformLocation(id,"_x"),_x);
 
   // draw faces 
   glBindVertexArray(_vaoTerrain);
@@ -103,6 +108,19 @@ void Viewer::paintGL() {
   // activate the buffer shader 
   glUseProgram(_terrainShader->id());
 
+  // move camera
+  //glm::vec3 camPos(r,-2, 1);
+    //glm::vec3 center(r/2,.5,0);
+    float r = riverFLow(_x );
+    glm::vec3 camPos(r,_camY, _camZ);
+  glm::vec3 center(r,0,0);
+  glm::vec3 up(0, 0, 1);
+  _viewMatrix = glm::lookAt(camPos, center, up);
+	float fovy = 45.0;
+	float aspect = (float)width()/(float)height();
+	float near = 0.1;
+	float far = 10.0;
+	_projMatrix = glm::perspective(fovy, aspect, near, far);
   // generate the map
   drawScene(_terrainShader->id());
 
@@ -158,6 +176,10 @@ void Viewer::mouseMoveEvent(QMouseEvent *me) {
 
 void Viewer::keyPressEvent(QKeyEvent *ke) {
   const float step = 0.05;
+  if(ke->key()==Qt::Key_Space) {
+      _x += _speed_x;
+      printf("Space pressed _x -> %f + %f\n", _x, _speed_x);
+  }
   if(ke->key()==Qt::Key_Z) {
     glm::vec2 v = glm::vec2(glm::transpose(_cam->normalMatrix())*glm::vec3(0,0,-1))*step;
     if(v[0]!=0.0 && v[1]!=0.0) v = glm::normalize(v)*step;
@@ -182,7 +204,20 @@ void Viewer::keyPressEvent(QKeyEvent *ke) {
     _motion[2] -= step;
   }
 
-  
+  //camera motion
+    if(ke->key()==Qt::Key_Z) {
+        _camZ += .1;
+    }
+    if(ke->key()==Qt::Key_S) {
+        _camZ -= .1;
+    }
+    if(ke->key()==Qt::Key_A) {
+        _camY -= .1;
+    }
+    if(ke->key()==Qt::Key_E) {
+        _camY += .1;
+    }
+
 
 
 
@@ -250,6 +285,6 @@ void Viewer::initializeGL() {
   //_timer->start();
 }
 
-float riverFLow(float t){
-    return = .5*sin(t*10);
+float Viewer::riverFLow(float t){
+    return .5*sin(t*3);
 }
