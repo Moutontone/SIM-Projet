@@ -56,26 +56,23 @@ float riverFLow(float t){
 
 float computeHeight(in vec2 p) {
   float height;
+  float height_micro;
   float height1;
   float height2;
   float height3;
   float height_river;
-  // version plan
-  //  float height_left = left_height();
-//  float height_right = right_height();
-  if (p.x < -1./3.) {
-    //rive gauche
-    height = 0;
-    // variation
-    vec2 point = vec2(p.x, p.y + _y);
-    height += pnoise(point,.05,.8,.5,2);
-    height1 = height;
-    height1 = .051;
-  } else if (p.x > 1./3.) {
-    //rive droite
-    height = -.02;
-    height3 = height;
-  }
+  // grandes variations
+  // rive gauche
+  vec2 point = vec2(p.x, p.y + _y);
+  height = pnoise(point,.25,1.1,.05,2);
+  height += 0.02;
+  height_micro = pnoise(point,.005,3,7.05,2);
+  height_micro = pnoise(point,.004,50,.005,2);
+  height1 = height + height_micro;
+  //rive droite
+  height = pnoise(point,.1 ,3,.05,2);
+  height_micro = pnoise(point,.004,50,.005,2);
+  height3 = height + height_micro;
   // lit de la rivière
   float offset = -(3.1415)/2.;
   float periode = 10;
@@ -90,15 +87,16 @@ float computeHeight(in vec2 p) {
   height = max(-.12, height);
   height_river = height;
 
+  // smoothstep between tiers
+  float v = .1;
+  float off = .23;
   if (p.x < 0) {
-    float frontiere = -1./3.;
-    float v = .1;
+    float frontiere = -1./3. + off;
     float s = smoothstep(frontiere-v, frontiere+v, p.x);
     height = mix(height1, height_river, s);
     return height;
   } if (p.x > 0){
-    float frontiere = 1./3.;
-    float v = .1;
+    float frontiere = 1./3. - off;
     float s = smoothstep(frontiere-v, frontiere+v, p.x);
     height = mix(height_river,height3, s);
     return height;

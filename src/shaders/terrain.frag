@@ -12,24 +12,33 @@ in float px;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-  vec3 ambient  = vec3(0.3,0.3,0.2);
-  const vec3 diffuse  = vec3(0.3,0.5,0.8);
+  vec3 ambient  = vec3(0.1,0.1,0.05);
+  vec3 diffuse  = vec3(0.3,0.5,0.8);
   const vec3 specular = vec3(0.8,0.2,0.2);
-  const float et = 50.0;
+  const float et = 500.0;
 
   vec3 n = normalize(normalView);
   vec3 e = normalize(eyeView);
   vec3 l = normalize(light);
 
-  if (px < -1./3.) {
-    //rive gauche
-    ambient = vec3(0.8,0.3,0.3);
-  } else if (px > 1./3.) {
-    //rive droite
-    ambient = vec3(0.3, 0.3, 0.8);
+  vec3 diffuseG = vec3(0.9,0.3,0.3);
+  vec3 diffuseM = vec3(0.1,0.3,0.3);
+  vec3 diffuseD = vec3(0.3, 0.9, 0.3);
+
+  // smooth step for colors
+  float v = .03;
+  if (px < 0) {
+    float frontiere = -1./3.;
+    float s = smoothstep(frontiere-v, frontiere+v, px);
+    diffuse = mix(diffuseG, diffuseM, s);
   } else {
-    ambient = vec3(0.3,0.8,0.3);
+    float frontiere = 1./3.;
+    float s = smoothstep(frontiere-v, frontiere+v, px);
+    diffuse = mix(diffuseM,diffuseD, s);
+
   }
+
+
     float diff = dot(l,n);
   float spec = pow(max(dot(reflect(l,n),e),0.0),et);
 
