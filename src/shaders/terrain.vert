@@ -51,7 +51,8 @@ float pnoise(in vec2 p,in float amplitude,in float frequency,in float persistenc
 
 float riverFLow(float t){
 //  return .5*sin(t*3);
-  return .5*sin(t*3) + .2*sin(t*8) + 2*sin(t*0.2);
+  float l = .2;
+  return .5*sin(t*3*l) + .2*sin(t*8*l) + 2*sin(t*0.2*l);
 }
 
 float computeHeight(in vec2 p) {
@@ -66,7 +67,7 @@ float computeHeight(in vec2 p) {
   vec2 point = vec2(p.x, p.y + _y);
   height = pnoise(point,.25,1.1,.05,2);
   height += 0.02;
-  height_micro = pnoise(point,.005,3,7.05,2);
+//  height_micro = pnoise(point,.005,3,7.05,2);
   height_micro = pnoise(point,.004,50,.005,2);
   height1 = height + height_micro;
   //rive droite

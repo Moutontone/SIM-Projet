@@ -114,7 +114,9 @@ void Viewer::paintGL() {
     //glm::vec3 center(r/2,.5,0);
     float r = riverFlow(_y + -1);
     glm::vec3 camPos(r,_camY, _camZ);
-  glm::vec3 center(_lookAtX + r,0,0);
+    float lookahead = .5;
+  glm::vec3 center(_lookAtX + riverFlow(_y -1 +lookahead),0,0);
+//  glm::vec3 center(_lookAtX + r,0,0);
   glm::vec3 up(0, 0, 1);
   _viewMatrix = glm::lookAt(camPos, center, up);
 	float fovy = 45.0;
@@ -303,5 +305,6 @@ void Viewer::initializeGL() {
 
 float Viewer::riverFlow(float t){
     //return .5*sin(t*3);
-    return .5*sin(t*3) + .2*sin(t*8) + 2*sin(t*0.2);
+    float l = .2;
+    return .5*sin(t*3*l) + .2*sin(t*8*l) + 2*sin(t*0.2*l);
 }
