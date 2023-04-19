@@ -66,7 +66,7 @@ float computeHeight(in vec2 p) {
   // rive gauche
   vec2 point = vec2(p.x, p.y + _y);
   height = pnoise(point,.25,1.1,.05,2);
-  height += 0.02;
+  height += 0.04;
 //  height_micro = pnoise(point,.005,3,7.05,2);
   height_micro = pnoise(point,.004,50,.005,2);
   height1 = height + height_micro;

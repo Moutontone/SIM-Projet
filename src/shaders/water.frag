@@ -21,25 +21,25 @@ void main() {
   vec3 e = normalize(eyeView);
   vec3 l = normalize(light);
 
-  vec3 diffuseG = vec3(96., 153., 54.) /255.;
-  vec3 diffuseM = vec3(53., 90., 21.) /255.;
-  vec3 diffuseD = vec3(96.,153.,54.) /255.;
+  vec3 diffuseG = vec3(0.1,0.3,0.9);
+  vec3 diffuseM = vec3(0.1,0.3,0.98);
+  vec3 diffuseD = vec3(0.3, 0.9, 0.8);
 
   // smooth step for colors
   float v = .03;
   if (px < 0) {
-    float frontiere = -1./7.;
+    float frontiere = -1./3.;
     float s = smoothstep(frontiere-v, frontiere+v, px);
     diffuse = mix(diffuseG, diffuseM, s);
   } else {
-    float frontiere = 1./7.;
+    float frontiere = 1./3.;
     float s = smoothstep(frontiere-v, frontiere+v, px);
     diffuse = mix(diffuseM,diffuseD, s);
 
   }
 
 
-    float diff = dot(l,n);
+  float diff = dot(l,n);
   float spec = pow(max(dot(reflect(l,n),e),0.0),et);
 
   vec3 color = ambient + diff*diffuse + spec*specular;

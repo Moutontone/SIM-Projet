@@ -15,7 +15,7 @@ Viewer::Viewer(char *,const QGLFormat &format)
     _speed_y(.05),
     _camX(0),
     _camY(-1.001),
-    _camZ(2),
+    _camZ(.5),
     _lookAtX(0),
     _mode(false),
     _ndResol(512) {
@@ -47,12 +47,13 @@ void Viewer::createVAO() {
 
   // create the VBO associated with the grid (the terrain)
   glBindVertexArray(_vaoTerrain);
-  glBindBuffer(GL_ARRAY_BUFFER,_terrain[0]); // vertices 
+  glBindBuffer(GL_ARRAY_BUFFER,_terrain[0]); // vertices
   glBufferData(GL_ARRAY_BUFFER,_grid->nbVertices()*3*sizeof(float),_grid->vertices(),GL_STATIC_DRAW);
   glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,(void *)0);
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,_terrain[1]); // indices 
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER,_grid->nbFaces()*3*sizeof(int),_grid->faces(),GL_STATIC_DRAW); 
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,_grid->nbFaces()*3*sizeof(int),_grid->faces(),GL_STATIC_DRAW);
+
 }
 
 void Viewer::deleteVAO() {
@@ -62,19 +63,25 @@ void Viewer::deleteVAO() {
 
 void Viewer::createShaders() {
   _terrainShader = new Shader();
-  
+  _waterShader = new Shader();
+
   _terrainShader->load("shaders/terrain.vert","shaders/terrain.frag");
+  _waterShader->load("shaders/water.vert","shaders/water.frag");
 }
 
 void Viewer::deleteShaders() {
   delete _terrainShader;
+  delete _waterShader;
 
   _terrainShader = NULL;
+  _waterShader = NULL;
 }
 
 void Viewer::reloadShaders() {
   if(_terrainShader)
     _terrainShader->reload("shaders/terrain.vert","shaders/terrain.frag");
+  if (_waterShader)
+      _waterShader->reload("shaders/water.vert","shaders/water.frag");
 }
 
 
@@ -90,9 +97,9 @@ void Viewer::drawScene(GLuint id) {
   glUniform1f(glGetUniformLocation(id,"_y"),_y);
 
   // draw faces 
-  glBindVertexArray(_vaoTerrain);
-  glDrawElements(GL_TRIANGLES,3*_grid->nbFaces(),GL_UNSIGNED_INT,(void *)0);
-  glBindVertexArray(0);
+    glBindVertexArray(_vaoTerrain);
+    glDrawElements(GL_TRIANGLES,3*_grid->nbFaces(),GL_UNSIGNED_INT,(void *)0);
+    glBindVertexArray(0);
 }
 
 void Viewer::paintGL() {
@@ -105,10 +112,6 @@ void Viewer::paintGL() {
 
   // clear buffers
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  // activate the buffer shader 
-  glUseProgram(_terrainShader->id());
-
   // move camera
   //glm::vec3 camPos(r,-2, 1);
     //glm::vec3 center(r/2,.5,0);
@@ -124,10 +127,20 @@ void Viewer::paintGL() {
 	float near = 0.1;
 	float far = 10.0;
 	_projMatrix = glm::perspective(fovy, aspect, near, far);
-  // generate the map
-  drawScene(_terrainShader->id());
 
-  // disable depth test 
+  // activate the buffer shader
+    glUseProgram(_waterShader->id());
+
+    // generate the map
+    drawScene(_terrainShader->id());
+
+    // activate the buffer shade
+    glUseProgram(_terrainShader->id());
+
+  drawScene(_terrainShader->id());
+//  drawScene(_waterShader->id());
+
+    // disable depth test
   glDisable(GL_DEPTH_TEST);
 
   // disable shader 

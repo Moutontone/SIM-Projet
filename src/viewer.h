@@ -74,7 +74,8 @@ class Viewer : public QGLWidget {
 
   // les shaders 
   Shader *_terrainShader;
-  
+  Shader *_waterShader;
+
   // vbo/vao ids 
   GLuint _vaoTerrain;
   GLuint _terrain[2];
