@@ -17,6 +17,7 @@ Viewer::Viewer(char *,const QGLFormat &format)
     _camY(-1.001),
     _camZ(.1),
     _lookAtX(0),
+    _t(.0),
     _mode(false),
     _ndResol(512) {
 
@@ -29,6 +30,10 @@ Viewer::Viewer(char *,const QGLFormat &format)
   connect(_timer,SIGNAL(timeout()),this,SLOT(updateGL()));
 }
 
+void Viewer::QtTimerEvt(){
+    updateGL();
+    _t += 10.;
+}
 Viewer::~Viewer() {
   delete _timer;
   delete _grid;
@@ -122,6 +127,8 @@ void Viewer::drawScene(GLuint id) {
   glUniform3fv(glGetUniformLocation(id,"light"),1,&(_light[0]));
   glUniform3fv(glGetUniformLocation(id,"motion"),1,&(_motion[0]));
   glUniform1f(glGetUniformLocation(id,"_y"),_y);
+  glUniform2fv(glGetUniformLocation(id,"_vt"),1, &glm::vec2(_y, _t)[0]);
+  glUniform1f(glGetUniformLocation(id,"_t"),_t);
 
     // send textures
     glActiveTexture(GL_TEXTURE0);
@@ -134,6 +141,8 @@ void Viewer::drawScene(GLuint id) {
 }
 
 void Viewer::paintGL() {
+
+    _t += .001;
   // allow opengl depth test 
   glEnable(GL_DEPTH_TEST);
   
@@ -345,7 +354,7 @@ void Viewer::initializeGL() {
   createTextures();
 
   // starts the timer 
-  //_timer->start();
+  _timer->start();
 }
 
 float Viewer::riverFlow(float t){

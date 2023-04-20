@@ -10,6 +10,8 @@ uniform mat3 normalMat;   // normal matrix
 uniform vec3 light;
 uniform vec3 motion;
 uniform float _y;
+uniform float _t;
+uniform vec2 _vt;
 
 // out variables 
 out vec3 normalView;
@@ -56,16 +58,23 @@ float riverFLow(float t){
 }
 
 float computeHeight(in vec2 p) {
-  float larg = 0.14;
+  float larg = 0.15;
+  float base = -.06;
   if (p.x < -larg){
-    return -0.5;
+    base = -0.5;
   }
   if (p.x > larg){
-    return -0.5;
+    base = -0.5;
   }
-  float base = -.06;
-  float noise = pnoise;
-  return base + noise*0.1;
+  vec2 point = vec2(p.x, p.y + _y);
+  float noise = pnoise(point,.09,40,.005,2);
+//  float noise = pnoise(point,.25,10,1.005,2);
+  float waves = gnoise(point*2.);
+  if (p.x > 0) {
+//    waves += _y;
+    return base + noise*0.1 + waves*0.1;
+  }
+  return base + noise*0.1 + waves*0.1;
 }
 
 

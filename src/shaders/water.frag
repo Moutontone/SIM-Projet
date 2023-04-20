@@ -14,7 +14,7 @@ layout(location = 0) out vec4 outColor;
 void main() {
   vec3 ambient  = vec3(0.1,0.1,0.05);
   vec3 diffuse  = vec3(0.3,0.5,0.8);
-  const vec3 specular = vec3(0.8,0.2,0.2);
+  const vec3 specular = vec3(0.8,0.9,1);
   const float et = 500.0;
 
   vec3 n = normalize(normalView);

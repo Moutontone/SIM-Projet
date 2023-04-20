@@ -44,7 +44,7 @@ class Viewer : public QGLWidget {
   void deleteVAO();
 
   void createTextures();
-  void deleteTextures();
+   void deleteTextures();
   GLuint _texIds[1];
 
   void createShaders();
@@ -55,6 +55,7 @@ class Viewer : public QGLWidget {
   void drawScene(GLuint id);
 
   QTimer        *_timer;    // timer that controls the animation
+  void QtTimerEvt();
 
   Grid   *_grid;   // the grid
   Camera *_cam;    // the camera
@@ -70,6 +71,7 @@ class Viewer : public QGLWidget {
   float _camY;
   float _camZ;
   float _lookAtX;
+  float _t;
   glm::mat4 _viewMatrix; // view matrix
   glm::mat4 _projMatrix; // projection matrix 
   

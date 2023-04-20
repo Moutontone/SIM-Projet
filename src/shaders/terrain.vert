@@ -10,6 +10,7 @@ uniform mat3 normalMat;   // normal matrix
 uniform vec3 light;
 uniform vec3 motion;
 uniform float _y;
+uniform float _t;
 
 // out variables 
 out vec3 normalView;
@@ -134,5 +135,5 @@ void main() {
   gl_Position =  projMat*mdvMat*vec4(p,1);
   normalView  = normalize(normalMat*n);
   eyeView     = normalize((mdvMat*vec4(p,1.0)).xyz);
-  uvcoord = vec2(position.x, position.y + _y)  * 1.;
+  uvcoord = vec2(position.x, position.y + _y)  * 7.;
 }
