@@ -8,8 +8,8 @@ TARGET    = terrain
 LIBS     += -lGLEW -lGL -lGLU -lm
 INCLUDEPATH  += $${GLEW_PATH}/include  $${GLM_PATH}
 
-SOURCES   = shader.cpp grid.cpp trackball.cpp camera.cpp viewer.cpp main.cpp 
-HEADERS   = shader.h grid.h trackball.h camera.h viewer.h
+SOURCES   = shader.cpp grid.cpp trackball.cpp camera.cpp viewer.cpp main.cpp meshloader.cpp
+HEADERS   = shader.h grid.h trackball.h camera.h viewer.h meshloader.h
 
 CONFIG   += qt opengl warn_on thread uic4 release
 QT       *= xml opengl core

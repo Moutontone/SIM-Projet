@@ -24,6 +24,7 @@
 #include "camera.h"
 #include "shader.h"
 #include "grid.h"
+#include "meshLoader.h"
 
 class Viewer : public QGLWidget {
  public:
@@ -47,12 +48,16 @@ class Viewer : public QGLWidget {
    void deleteTextures();
   GLuint _texIds[1];
 
+  void loadMeshIntoVAO();
+
   void createShaders();
   void deleteShaders();
   void reloadShaders();
 
   // drawing functions
   void drawScene(GLuint id);
+  void drawThrees(GLuint id);
+  void drawAThree(const glm::vec3 &pos);
 
   QTimer        *_timer;    // timer that controls the animation
   void QtTimerEvt();
@@ -81,10 +86,15 @@ class Viewer : public QGLWidget {
   // les shaders 
   Shader *_terrainShader;
   Shader *_waterShader;
+  Shader *_treeShader;
 
   // vbo/vao ids 
   GLuint _vaoTerrain;
   GLuint _terrain[2];
+
+  Mesh *_tree;
+  GLuint _vaoThrees;
+  GLuint _buffers[3];
 
   unsigned int _ndResol;
 };
