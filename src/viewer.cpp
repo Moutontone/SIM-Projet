@@ -1,4 +1,5 @@
 #include "viewer.h"
+#include "meshLoader.h"
 
 #include <math.h>
 #include <iostream>
@@ -13,7 +14,7 @@ Viewer::Viewer(char *,const QGLFormat &format)
     _motion(glm::vec3(0,0,0)),
     _y(.0),
     temps(.0),
-    _speed_y(.005),
+    _speed_y(.010),
     _camX(0),
     _camY(-1.001),
     _camZ(.1),
@@ -23,6 +24,8 @@ Viewer::Viewer(char *,const QGLFormat &format)
     _ndResol(512) {
 
   setlocale(LC_ALL,"C");
+
+  _tree = new Mesh("models/cloud.off");
 
   _grid = new Grid(_ndResol,-1.0f,1.0f);
   _cam  = new Camera(1.0f,glm::vec3(0.0f,0.0f,0.0f));
@@ -39,15 +42,20 @@ Viewer::~Viewer() {
   delete _timer;
   delete _grid;
   delete _cam;
+  delete _tree;
 
   // delete all GPU objects
   deleteShaders();
   deleteTextures();
-  deleteVAO(); 
+  deleteVAO();
 }
 
 void Viewer::createVAO() {
-  // cree les buffers associés au terrain 
+    // buffers des arbres
+    glGenVertexArrays(1, &_vaoThrees);
+    glGenBuffers(3, _buffers);
+
+  // cree les buffers associés au terrain
 
   glGenBuffers(2,_terrain);
   glGenVertexArrays(1,&_vaoTerrain);
@@ -64,24 +72,52 @@ void Viewer::createVAO() {
 }
 
 void Viewer::deleteVAO() {
+    glDeleteBuffers(3, _buffers);
+    glDeleteVertexArrays(1, &_vaoThrees);
   glDeleteBuffers(2,_terrain);
   glDeleteVertexArrays(1,&_vaoTerrain);
+}
+
+void Viewer::loadMeshIntoVAO() { // Into GPU
+    glBindVertexArray(_vaoThrees);
+
+    // Store mesh positions into buffer 0
+    glBindBuffer(GL_ARRAY_BUFFER, _buffers[0]);
+    glBufferData(GL_ARRAY_BUFFER, _tree->nb_vertices*3*sizeof(float), _tree->vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,(void *)0);
+    glEnableVertexAttribArray(0);
+
+    // Store mesh indices into buffer 1
+    glBindBuffer(GL_ARRAY_BUFFER, _buffers[1]);
+    glBufferData(GL_ARRAY_BUFFER, _tree->nb_vertices*3*sizeof(float), _tree->normals, GL_STATIC_DRAW);
+    glVertexAttribPointer(1,3,GL_FLOAT,GL_TRUE,0,(void *)0);
+    glEnableVertexAttribArray(1);
+
+    // Store mesh normals into buffer 2
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _buffers[2]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, _tree->nb_faces*3*sizeof(float), _tree->faces, GL_STATIC_DRAW);
+
+    glBindVertexArray(0);
 }
 
 void Viewer::createShaders() {
   _terrainShader = new Shader();
   _waterShader = new Shader();
+  _treeShader = new Shader();
 
   _terrainShader->load("shaders/terrain.vert","shaders/terrain.frag");
   _waterShader->load("shaders/water.vert","shaders/water.frag");
+  _treeShader->load("shaders/cloud.vert", "shaders/cloud.frag");
 }
 
 void Viewer::deleteShaders() {
   delete _terrainShader;
   delete _waterShader;
+  delete _treeShader;
 
   _terrainShader = NULL;
   _waterShader = NULL;
+  _treeShader = NULL;
 }
 
 void Viewer::createTextures(){
@@ -89,7 +125,7 @@ void Viewer::createTextures(){
     // enable the use of 2D textures
     glEnable(GL_TEXTURE_2D);
     // create one texture on the GPU
-    glGenTextures(1, _texIds);
+    glGenTextures(2, _texIds);
     // load an image (CPU side)
     image = QGLWidget::convertToGLFormat(QImage("textures/grass_grass_0124_01_tiled.jpg"));
      // activate this texture (the current one)
@@ -115,12 +151,59 @@ void Viewer::reloadShaders() {
     _terrainShader->reload("shaders/terrain.vert","shaders/terrain.frag");
   if (_waterShader)
       _waterShader->reload("shaders/water.vert","shaders/water.frag");
+  if (_treeShader)
+    _treeShader->reload("shaders/cloud.vert", "shaders/cloud.frag");
 }
 
+void Viewer::drawAThree(const glm::vec3 &pos) {
+
+    const int id = _treeShader->id();
+    // send uniform variables
+    glm::mat4 mdv = glm::scale(_cam->mdvMatrix(), glm::vec3(0.0005));
+    mdv = glm::rotate(mdv, (float) 90, glm::vec3(0,1,0));
+    mdv = glm::rotate(mdv, (float) 15, glm::vec3(0,0,1));
+    mdv = glm::translate(mdv,pos);
+
+    glUniformMatrix4fv(glGetUniformLocation(id,"mdvMat"),1,GL_FALSE,&(mdv[0][0]));
+    glUniformMatrix4fv(glGetUniformLocation(id,"projMat"),1,GL_FALSE,&(_projMatrix[0][0]));
+    glUniformMatrix3fv(glGetUniformLocation(id,"normalMat"),1,GL_FALSE,&(_cam->normalMatrix()[0][0]));
+
+    glUniform3fv(glGetUniformLocation(id,"light"),1,&(_light[0]));
+    glUniform3fv(glGetUniformLocation(id,"motion"),1,&(_motion[0]));
+    glUniform1f(glGetUniformLocation(id,"_y"),_y);
+
+    glDrawElements(GL_TRIANGLES, 3*_tree->nb_faces, GL_UNSIGNED_INT, (void *) 0);
+
+}
+
+void Viewer::drawThrees(GLuint id) {
+    glBindVertexArray(_vaoThrees);
+
+    // We draw some threes
+    const float r = _tree->radius*2.5;
+
+//    int nuages = 10;
+//    for (int i=-nuages; i<nuages; i++){
+//        drawAThree(glm::vec3(r*10,r*1.5,i*r));
+//    }
+
+    drawAThree(glm::vec3(r*1.5,r*1.5,r*1.5));
+    drawAThree(glm::vec3(r,r*1.35,r*2.6));
+    drawAThree(glm::vec3(r*2,r*0.8,r*-0.5));
+    drawAThree(glm::vec3(r*5,r*1,r*0.3));
+    drawAThree(glm::vec3(r*15,r*0.6,r*5.4));
+    drawAThree(glm::vec3(r*15,r*-0.4,r*-9.4));
+
+    drawAThree(glm::vec3(-r*2,r*1.55,r*-1.4));
+    drawAThree(glm::vec3(-r*1.3,r*1.30,r*-1));
+    drawAThree(glm::vec3(-r*1.7,r*1.2,r*1.8));
+
+    glBindVertexArray(0);
+}
 
 void Viewer::drawScene(GLuint id) {
   // send uniform variables
-  //glUniformMatrix4fv(glGetUniformLocation(id,"mdvMat"),1,GL_FALSE,&(_cam->mdvMatrix()[0][0]));
+
   glUniformMatrix4fv(glGetUniformLocation(id,"mdvMat"),1,GL_FALSE,&(_viewMatrix[0][0]));
   //glUniformMatrix4fv(glGetUniformLocation(id,"projMat"),1,GL_FALSE,&(_cam->projMatrix()[0][0]));
   glUniformMatrix4fv(glGetUniformLocation(id,"projMat"),1,GL_FALSE,&(_projMatrix[0][0]));
@@ -152,7 +235,7 @@ void Viewer::paintGL() {
 //
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  
+
   // screen viewport
   glViewport(0,0,width(),height());
 
@@ -172,13 +255,16 @@ void Viewer::paintGL() {
 	float fovy = 45.0;
 	float aspect = (float)width()/(float)height();
 	float near = 0.1;
-	float far = 3.0;
+	float far = 500.0;
 	_projMatrix = glm::perspective(fovy, aspect, near, far);
 
-    // activate the buffer shade
+    // trees
+    glUseProgram(_treeShader->id());
+    drawThrees(_treeShader->id());
+    // terrain
     glUseProgram(_terrainShader->id());
     drawScene(_terrainShader->id());
-    // activate the buffer shader
+    // water
     glUseProgram(_waterShader->id());
     drawScene(_waterShader->id());
 
@@ -357,6 +443,7 @@ void Viewer::initializeGL() {
 
   // init VAO/VBO
   createVAO();
+  loadMeshIntoVAO();
   createTextures();
 
   // starts the timer 
