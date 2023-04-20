@@ -135,5 +135,5 @@ void main() {
   gl_Position =  projMat*mdvMat*vec4(p,1);
   normalView  = normalize(normalMat*n);
   eyeView     = normalize((mdvMat*vec4(p,1.0)).xyz);
-  uvcoord = vec2(position.x, position.y + _y)  * 7.;
+  uvcoord = vec2(position.x, position.y + _y)  * 5.;
 }

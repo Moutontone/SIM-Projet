@@ -17,6 +17,7 @@ uniform float _t;
 out vec3 normalView;
 out vec3 eyeView;
 out float px;
+out float py;
 
 // fonctions utiles pour créer des terrains en général
 vec2 hash(vec2 p) {
@@ -98,6 +99,7 @@ vec3 computeNormal(in vec2 p) {
 
 void main() {
   px = position.x;
+  py = position.y;
   float h =  computeHeight(position.xy);
   vec3  n = computeNormal(position.xy);
 

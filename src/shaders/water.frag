@@ -8,7 +8,8 @@ uniform vec3 motion;
 in vec3  normalView;
 in vec3  eyeView;
 in float px;
-// out buffers 
+in float py;
+// out buffers
 layout(location = 0) out vec4 outColor;
 
 void main() {
@@ -43,6 +44,9 @@ void main() {
   float spec = pow(max(dot(reflect(l,n),e),0.0),et);
 
   vec3 color = ambient + diff*diffuse + spec*specular;
-
-  outColor = vec4(color,.3);
+  float alpha = .7;
+  if (py > 0) {
+    alpha += py* .5;
+  }
+  outColor = vec4(color,alpha);
 }

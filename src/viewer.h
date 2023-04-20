@@ -46,7 +46,8 @@ class Viewer : public QGLWidget {
 
   void createTextures();
    void deleteTextures();
-  GLuint _texIds[1];
+  GLuint _texIds[3];
+  GLuint _texIdsBis[3];
 
   void loadMeshIntoVAO();
 

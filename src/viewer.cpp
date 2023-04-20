@@ -125,7 +125,7 @@ void Viewer::createTextures(){
     // enable the use of 2D textures
     glEnable(GL_TEXTURE_2D);
     // create one texture on the GPU
-    glGenTextures(2, _texIds);
+    glGenTextures(1, _texIds);
     // load an image (CPU side)
     image = QGLWidget::convertToGLFormat(QImage("textures/grass_grass_0124_01_tiled.jpg"));
      // activate this texture (the current one)
@@ -140,10 +140,29 @@ void Viewer::createTextures(){
                   0, GL_RGBA,GL_UNSIGNED_BYTE,(const GLvoid *)image.bits());
      // generate mipmaps
     glGenerateMipmap(GL_TEXTURE_2D);
+
+    // load an image (CPU side)
+    image = QGLWidget::convertToGLFormat(QImage("textures/gravel.jpg"));
+    // activate this texture (the current one)
+    glGenTextures(1, &_texIds[1]);
+    glBindTexture(GL_TEXTURE_2D,_texIds[1]);
+    // set texture parameters
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_MIRRORED_REPEAT);
+    // transfer data from CPU to GPU memory
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA32F,image.width(),image.height(),
+                 0, GL_RGBA,GL_UNSIGNED_BYTE,(const GLvoid *)image.bits());
+    // generate mipmaps
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+
 }
 
 void Viewer::deleteTextures() {
     glDeleteTextures(1,_texIds);
+    glDeleteTextures(1,_texIdsBis);
 }
 
 void Viewer::reloadShaders() {
@@ -220,6 +239,11 @@ void Viewer::drawScene(GLuint id) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,_texIds[0]);
     glUniform1i(glGetUniformLocation(id,"grassmap"),0);
+    if (id == _terrainShader->id()) {
+        glActiveTexture(GL_TEXTURE0+1);
+        glBindTexture(GL_TEXTURE_2D, _texIds[1]);
+        glUniform1i(glGetUniformLocation(id, "gravelmap"), 1);
+    }
   // draw faces
     glBindVertexArray(_vaoTerrain);
     glDrawElements(GL_TRIANGLES,3*_grid->nbFaces(),GL_UNSIGNED_INT,(void *)0);
@@ -246,7 +270,7 @@ void Viewer::paintGL() {
     //glm::vec3 center(r/2,.5,0);
     float r = riverFlow(_y + -1);
     glm::vec3 camPos(r,_camY, _camZ);
-    float lookahead = .5;
+    float lookahead = .9;
   glm::vec3 center(_lookAtX + riverFlow(_y -1 +lookahead),0,0);
 //  glm::vec3 center(_lookAtX + r,0,0);
   glm::vec3 up(0, 0, 1);

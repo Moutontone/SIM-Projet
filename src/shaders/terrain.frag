@@ -4,6 +4,7 @@
 uniform vec3 light;
 uniform vec3 motion;
 uniform sampler2D grassmap;
+uniform sampler2D gravelmap;
 
 // in variables 
 in vec3  normalView;
@@ -26,19 +27,20 @@ void main() {
   vec4 t = texture(grassmap, uvcoord);
   vec3 diffuseG = vec3(96., 153., 54.) /255.;
   diffuseG = t.xyx;
-  vec3 diffuseM = vec3(152., 184., 12.) /255.;
+  vec3 diffuseM = vec3(152., 184., 120.) /255.;
+  vec4 tg = texture(gravelmap, uvcoord*2);
+  diffuseM = tg.xyz;
   vec3 diffuseD = vec3(96.,153.,54.) /255.;
   diffuseD = t.xyx;
 
   // smooth step for colors
   float v = .03;
+  float frontiere = -1./10.;
   if (px < 0) {
-    float frontiere = -1./7.;
     float s = smoothstep(frontiere-v, frontiere+v, px);
     diffuse = mix(diffuseG, diffuseM, s);
   } else {
-    float frontiere = 1./7.;
-    float s = smoothstep(frontiere-v, frontiere+v, px);
+    float s = smoothstep(-frontiere-v, -frontiere+v, px);
     diffuse = mix(diffuseM,diffuseD, s);
   }
 
@@ -51,5 +53,5 @@ void main() {
 //  color = diffuse;
 //  color = t;
   outColor = vec4(color,1.0);
-//  outColor = t;
+//  outColor = tg;
 }
