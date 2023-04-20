@@ -64,6 +64,7 @@ class Viewer : public QGLWidget {
   glm::vec3 _motion; // motion offset for the noise texture
 
   float _y;
+  float temps;
   float _speed_y;
   float riverFlow(float t);
 

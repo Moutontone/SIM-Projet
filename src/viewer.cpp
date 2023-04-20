@@ -12,7 +12,8 @@ Viewer::Viewer(char *,const QGLFormat &format)
     _light(glm::vec3(0,0,1)),
     _motion(glm::vec3(0,0,0)),
     _y(.0),
-    _speed_y(.05),
+    temps(.0),
+    _speed_y(.005),
     _camX(0),
     _camY(-1.001),
     _camZ(.1),
@@ -126,10 +127,12 @@ void Viewer::drawScene(GLuint id) {
   glUniformMatrix3fv(glGetUniformLocation(id,"normalMat"),1,GL_FALSE,&(_cam->normalMatrix()[0][0]));
   glUniform3fv(glGetUniformLocation(id,"light"),1,&(_light[0]));
   glUniform3fv(glGetUniformLocation(id,"motion"),1,&(_motion[0]));
-  glUniform1f(glGetUniformLocation(id,"_y"),_y);
-  glUniform2fv(glGetUniformLocation(id,"_vt"),1, &glm::vec2(_y, _t)[0]);
-  glUniform1f(glGetUniformLocation(id,"_t"),_t);
-
+  if (id == _terrainShader->id()) {
+      glUniform1f(glGetUniformLocation(id,"_y"),_y);
+  } else if (id == _waterShader->id()) {
+      glUniform1f(glGetUniformLocation(id,"_y"),_y);
+      glUniform1f(glGetUniformLocation(id,"_t"),_t);
+  }
     // send textures
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,_texIds[0]);
@@ -168,16 +171,14 @@ void Viewer::paintGL() {
 	float far = 3.0;
 	_projMatrix = glm::perspective(fovy, aspect, near, far);
 
-  // activate the buffer shader
-    glUseProgram(_waterShader->id());
-
-    // generate the map
-    drawScene(_terrainShader->id());
-
     // activate the buffer shade
     glUseProgram(_terrainShader->id());
+    drawScene(_terrainShader->id());
+    // activate the buffer shader
+    glUseProgram(_waterShader->id());
+    drawScene(_waterShader->id());
 
-  drawScene(_terrainShader->id());
+
 //  drawScene(_waterShader->id());
 
     // disable depth test
@@ -286,6 +287,7 @@ void Viewer::keyPressEvent(QKeyEvent *ke) {
         printf("\tCamera (r,_CamY, _CamZ) = (%f,%f,%f)\n",r ,_camY, _camZ);
         printf("\tCamera lookAtX = %f\n",_lookAtX);
         printf("\t_y = %f and riverflow(_y) = %f \n",_y, riverFlow(_y));
+        printf("\ttime _t : %f \n", _t);
 
     }
 

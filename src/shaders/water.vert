@@ -10,8 +10,8 @@ uniform mat3 normalMat;   // normal matrix
 uniform vec3 light;
 uniform vec3 motion;
 uniform float _y;
+uniform float clock;
 uniform float _t;
-uniform vec2 _vt;
 
 // out variables 
 out vec3 normalView;
@@ -58,7 +58,7 @@ float riverFLow(float t){
 }
 
 float computeHeight(in vec2 p) {
-  float larg = 0.15;
+  float larg = 0.16;
   float base = -.06;
   if (p.x < -larg){
     base = -0.5;
@@ -66,15 +66,19 @@ float computeHeight(in vec2 p) {
   if (p.x > larg){
     base = -0.5;
   }
-  vec2 point = vec2(p.x, p.y + _y);
-  float noise = pnoise(point,.09,40,.005,2);
+  vec2 point = vec2(p.x, p.y + _y + _t * 0.1);
+  point = vec2(p.x , p.y + _y + _t * 0.001);
+  float ampl = 0.05;
+  float noiseA = pnoise(point, ampl, 40,.005,2);
+  float noiseB = pnoise(point + vec2(0.5, 0.5), ampl, 40,.005,2);
+  float w = _t *20.;
+  float pi = 4.1315;
+  float noise = sin(w)*noiseA + sin(-w-pi/2)*noiseB;
+  point = vec2(p.x , p.y + _y + _t *  2.);
 //  float noise = pnoise(point,.25,10,1.005,2);
-  float waves = gnoise(point*2.);
-  if (p.x > 0) {
-//    waves += _y;
-    return base + noise*0.1 + waves*0.1;
-  }
-  return base + noise*0.1 + waves*0.1;
+  float waves = gnoise(point*2. );
+//  waves = 0;
+  return base + noise*0.1 + waves*0.03 ;
 }
 
 
@@ -100,6 +104,7 @@ void main() {
   //  float x = position.x + .5*sin(motion.x*10 +(_y + position.y)*3);
   float x = position.x + riverFLow(_y + position.y);
   vec3 p = vec3(x, position.y,h);
+//  vec3 p = vec3(x, position.y,h) + _t * 0.0001;
 
 
   gl_Position =  projMat*mdvMat*vec4(p,1);
