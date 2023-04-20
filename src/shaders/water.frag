@@ -12,10 +12,10 @@ in float px;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-  vec3 ambient  = vec3(0.1,0.1,0.05);
+  vec3 ambient  = vec3(18, 52, 86)/255.;
   vec3 diffuse  = vec3(0.3,0.5,0.8);
-  const vec3 specular = vec3(0.8,0.9,1);
-  const float et = 500.0;
+  const vec3 specular = vec3(253.,184.,19.) /255.;;
+  const float et = 5000.0;
 
   vec3 n = normalize(normalView);
   vec3 e = normalize(eyeView);
@@ -44,5 +44,5 @@ void main() {
 
   vec3 color = ambient + diff*diffuse + spec*specular;
 
-  outColor = vec4(color,1.0);
+  outColor = vec4(color,.3);
 }

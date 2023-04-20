@@ -26,7 +26,7 @@ void main() {
   vec4 t = texture(grassmap, uvcoord);
   vec3 diffuseG = vec3(96., 153., 54.) /255.;
   diffuseG = t.xyx;
-  vec3 diffuseM = vec3(52., 36., 12.) /255.;
+  vec3 diffuseM = vec3(152., 184., 12.) /255.;
   vec3 diffuseD = vec3(96.,153.,54.) /255.;
   diffuseD = t.xyx;
 

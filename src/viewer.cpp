@@ -148,6 +148,10 @@ void Viewer::paintGL() {
     _t += .001;
   // allow opengl depth test 
   glEnable(GL_DEPTH_TEST);
+
+//
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   
   // screen viewport
   glViewport(0,0,width(),height());
