@@ -10,7 +10,7 @@ using namespace std;
 Viewer::Viewer(char *,const QGLFormat &format)
   : QGLWidget(format),
     _timer(new QTimer(this)),
-    _light(glm::vec3(0,0,1)),
+    _light(glm::vec3(0,0,100)),
     _motion(glm::vec3(0,0,0)),
     _y(.0),
     temps(.0),

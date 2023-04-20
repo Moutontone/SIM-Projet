@@ -16,7 +16,7 @@ void main() {
   vec3 ambient  = vec3(18, 52, 86)/255.;
   vec3 diffuse  = vec3(0.3,0.5,0.8);
   const vec3 specular = vec3(253.,184.,19.) /255.;;
-  const float et = 5000.0;
+  const float et = 2000.0;
 
   vec3 n = normalize(normalView);
   vec3 e = normalize(eyeView);
