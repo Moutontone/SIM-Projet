@@ -63,7 +63,9 @@ float computeHeight(in vec2 p) {
   if (p.x > larg){
     return -0.5;
   }
-  return -.06;
+  float base = -.06;
+  float noise = pnoise;
+  return base + noise*0.1;
 }
 
 

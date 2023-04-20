@@ -15,6 +15,7 @@ uniform float _y;
 out vec3 normalView;
 out vec3 eyeView;
 out float px;
+out vec2 uvcoord;
 
 // fonctions utiles pour créer des terrains en général
 vec2 hash(vec2 p) {
@@ -133,4 +134,5 @@ void main() {
   gl_Position =  projMat*mdvMat*vec4(p,1);
   normalView  = normalize(normalMat*n);
   eyeView     = normalize((mdvMat*vec4(p,1.0)).xyz);
+  uvcoord = vec2(position.x, position.y + _y)  * 1.;
 }

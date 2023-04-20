@@ -43,6 +43,10 @@ class Viewer : public QGLWidget {
   void createVAO();
   void deleteVAO();
 
+  void createTextures();
+  void deleteTextures();
+  GLuint _texIds[1];
+
   void createShaders();
   void deleteShaders();
   void reloadShaders();

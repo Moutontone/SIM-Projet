@@ -3,11 +3,13 @@
 // input uniforms 
 uniform vec3 light;
 uniform vec3 motion;
+uniform sampler2D grassmap;
 
 // in variables 
 in vec3  normalView;
 in vec3  eyeView;
 in float px;
+in vec2 uvcoord;
 // out buffers 
 layout(location = 0) out vec4 outColor;
 
@@ -21,9 +23,12 @@ void main() {
   vec3 e = normalize(eyeView);
   vec3 l = normalize(light);
 
+  vec4 t = texture(grassmap, uvcoord);
   vec3 diffuseG = vec3(96., 153., 54.) /255.;
-  vec3 diffuseM = vec3(53., 90., 21.) /255.;
+  diffuseG = t.xyx;
+  vec3 diffuseM = vec3(52., 36., 12.) /255.;
   vec3 diffuseD = vec3(96.,153.,54.) /255.;
+  diffuseD = t.xyx;
 
   // smooth step for colors
   float v = .03;
@@ -35,14 +40,16 @@ void main() {
     float frontiere = 1./7.;
     float s = smoothstep(frontiere-v, frontiere+v, px);
     diffuse = mix(diffuseM,diffuseD, s);
-
   }
 
 
-    float diff = dot(l,n);
+  float diff = dot(l,n);
   float spec = pow(max(dot(reflect(l,n),e),0.0),et);
 
-  vec3 color = ambient + diff*diffuse + spec*specular;
-
+//  vec3 color = ambient + diff*diffuse + spec*specular;
+  vec3 color = ambient + diff*diffuse ; //+ spec*specular;
+//  color = diffuse;
+//  color = t;
   outColor = vec4(color,1.0);
+//  outColor = t;
 }

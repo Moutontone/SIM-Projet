@@ -15,7 +15,7 @@ Viewer::Viewer(char *,const QGLFormat &format)
     _speed_y(.05),
     _camX(0),
     _camY(-1.001),
-    _camZ(.5),
+    _camZ(.1),
     _lookAtX(0),
     _mode(false),
     _ndResol(512) {
@@ -36,6 +36,7 @@ Viewer::~Viewer() {
 
   // delete all GPU objects
   deleteShaders();
+  deleteTextures();
   deleteVAO(); 
 }
 
@@ -77,6 +78,32 @@ void Viewer::deleteShaders() {
   _waterShader = NULL;
 }
 
+void Viewer::createTextures(){
+    QImage image;
+    // enable the use of 2D textures
+    glEnable(GL_TEXTURE_2D);
+    // create one texture on the GPU
+    glGenTextures(1, _texIds);
+    // load an image (CPU side)
+    image = QGLWidget::convertToGLFormat(QImage("textures/grass_grass_0124_01_tiled.jpg"));
+     // activate this texture (the current one)
+     glBindTexture(GL_TEXTURE_2D,_texIds[0]);
+     // set texture parameters
+     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_MIRRORED_REPEAT);
+     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_MIRRORED_REPEAT);
+     // transfer data from CPU to GPU memory
+     glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA32F,image.width(),image.height(),
+                  0, GL_RGBA,GL_UNSIGNED_BYTE,(const GLvoid *)image.bits());
+     // generate mipmaps
+    glGenerateMipmap(GL_TEXTURE_2D);
+}
+
+void Viewer::deleteTextures() {
+    glDeleteTextures(1,_texIds);
+}
+
 void Viewer::reloadShaders() {
   if(_terrainShader)
     _terrainShader->reload("shaders/terrain.vert","shaders/terrain.frag");
@@ -96,14 +123,17 @@ void Viewer::drawScene(GLuint id) {
   glUniform3fv(glGetUniformLocation(id,"motion"),1,&(_motion[0]));
   glUniform1f(glGetUniformLocation(id,"_y"),_y);
 
-  // draw faces 
+    // send textures
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D,_texIds[0]);
+    glUniform1i(glGetUniformLocation(id,"grassmap"),0);
+  // draw faces
     glBindVertexArray(_vaoTerrain);
     glDrawElements(GL_TRIANGLES,3*_grid->nbFaces(),GL_UNSIGNED_INT,(void *)0);
     glBindVertexArray(0);
 }
 
 void Viewer::paintGL() {
-  
   // allow opengl depth test 
   glEnable(GL_DEPTH_TEST);
   
@@ -122,10 +152,11 @@ void Viewer::paintGL() {
 //  glm::vec3 center(_lookAtX + r,0,0);
   glm::vec3 up(0, 0, 1);
   _viewMatrix = glm::lookAt(camPos, center, up);
+//	float fovy = 20.0;
 	float fovy = 45.0;
 	float aspect = (float)width()/(float)height();
 	float near = 0.1;
-	float far = 10.0;
+	float far = 3.0;
 	_projMatrix = glm::perspective(fovy, aspect, near, far);
 
   // activate the buffer shader
@@ -311,6 +342,7 @@ void Viewer::initializeGL() {
 
   // init VAO/VBO
   createVAO();
+  createTextures();
 
   // starts the timer 
   //_timer->start();
