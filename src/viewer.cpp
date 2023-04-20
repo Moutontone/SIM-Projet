@@ -224,7 +224,6 @@ void Viewer::drawScene(GLuint id) {
 }
 
 void Viewer::paintGL() {
-
     _t += .001;
   // allow opengl depth test 
   glEnable(GL_DEPTH_TEST);
@@ -235,16 +234,12 @@ void Viewer::paintGL() {
   // clear buffers
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   // move camera
-  //glm::vec3 camPos(r,-2, 1);
-    //glm::vec3 center(r/2,.5,0);
     float r = riverFlow(_y + -1);
     glm::vec3 camPos(r,_camY, _camZ);
     float lookahead = .5;
   glm::vec3 center(_lookAtX + riverFlow(_y -1 +lookahead),0,0);
-//  glm::vec3 center(_lookAtX + r,0,0);
   glm::vec3 up(0, 0, 1);
   _viewMatrix = glm::lookAt(camPos, center, up);
-//	float fovy = 20.0;
 	float fovy = 45.0;
 	float aspect = (float)width()/(float)height();
 	float near = 0.1;
@@ -420,12 +415,12 @@ void Viewer::initializeGL() {
   }
 
   // init OpenGL settings
-  glClearColor(0.0,0.0,0.0,1.0);
+  glClearColor(69.0/255.0, 155.0/255.0, 230.0/255.0,1.0);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_TEXTURE_2D);
   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+  glEnable(GL_POINT_SMOOTH);
   glViewport(0,0,width(),height());
-
   // initialize camera
   _cam->initialize(width(),height(),true);
 
@@ -436,7 +431,6 @@ void Viewer::initializeGL() {
   createVAO();
   loadMeshIntoVAO();
   createTextures();
-
   // starts the timer 
   _timer->start();
 }
