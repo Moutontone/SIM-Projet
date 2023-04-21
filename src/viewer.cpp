@@ -14,7 +14,9 @@ Viewer::Viewer(char *,const QGLFormat &format)
     _motion(glm::vec3(0,0,0)),
     _y(.0),
     temps(.0),
+    _temps_moving(true),
     _speed_y(.010),
+    _moving(true),
     _camX(0),
     _camY(-1.001),
     _camZ(.1),
@@ -251,7 +253,8 @@ void Viewer::drawScene(GLuint id) {
 }
 
 void Viewer::paintGL() {
-    _t += .001;
+    if (_temps_moving) _t += .001;
+    if (_moving) _y += _speed_y * 0.1;
   // allow opengl depth test 
   glEnable(GL_DEPTH_TEST);
 
@@ -343,7 +346,8 @@ void Viewer::mouseMoveEvent(QMouseEvent *me) {
 void Viewer::keyPressEvent(QKeyEvent *ke) {
   const float step = 0.05;
   if(ke->key()==Qt::Key_Space) {
-      _y += _speed_y;
+//      _y += _speed_y;
+      _moving = not _moving;
   }
   if(ke->key()==Qt::Key_Z) {
     glm::vec2 v = glm::vec2(glm::transpose(_cam->normalMatrix())*glm::vec3(0,0,-1))*step;
@@ -370,51 +374,54 @@ void Viewer::keyPressEvent(QKeyEvent *ke) {
   }
 
   //camera motion
+  float speed_var = .03;
     if(ke->key()==Qt::Key_Z) {
-        _camZ += .1;
+        _speed_y += speed_var;
     }
     if(ke->key()==Qt::Key_S) {
-        _camZ -= .1;
+        _speed_y -= speed_var;
     }
-    if(ke->key()==Qt::Key_A) {
-        _camY -= .1;
-    }
-    if(ke->key()==Qt::Key_E) {
-        _camY += .1;
-    }
-    if(ke->key()==Qt::Key_Q) {
-        _lookAtX -= .1;
-    }
-    if(ke->key()==Qt::Key_D) {
-        _lookAtX += .1;
-    }
-    if(ke->key()==Qt::Key_I) {
-        //info
-        printf("Info :\n");
-
-        float r = riverFlow(_y + _camY);
-        printf("\tCamera (r,_CamY, _CamZ) = (%f,%f,%f)\n",r ,_camY, _camZ);
-        printf("\tCamera lookAtX = %f\n",_lookAtX);
-        printf("\t_y = %f and riverflow(_y) = %f \n",_y, riverFlow(_y));
-        printf("\ttime _t : %f \n", _t);
-
-    }
+//    if(ke->key()==Qt::Key_A) {
+//        _camY -= .1;
+//    }
+//    if(ke->key()==Qt::Key_E) {
+//        _camY += .1;
+//    }
+//    if(ke->key()==Qt::Key_Q) {
+//        _lookAtX -= .1;
+//    }
+//    if(ke->key()==Qt::Key_D) {
+//        _lookAtX += .1;
+//    }
+//    if(ke->key()==Qt::Key_I) {
+//        //info
+//        printf("Info :\n");
+//
+//        float r = riverFlow(_y + _camY);
+//        printf("\tCamera (r,_CamY, _CamZ) = (%f,%f,%f)\n",r ,_camY, _camZ);
+//        printf("\tCamera lookAtX = %f\n",_lookAtX);
+//        printf("\t_y = %f and riverflow(_y) = %f \n",_y, riverFlow(_y));
+//        printf("\ttime _t : %f \n", _t);
+//
+//    }
 
 
 
 
   // key a: play/stop animation
-  if(ke->key()==Qt::Key_A) {
-    if(_timer->isActive()) 
-      _timer->stop();
-    else 
-      _timer->start();
-  }
+//  if(ke->key()==Qt::Key_A) {
+//      _temps_moving = not _temps_moving;
+//
+//    if(_timer->isActive())
+//      _timer->stop();
+//    else
+//      _timer->start();
+//  }
 
   // key i: init camera
-  if(ke->key()==Qt::Key_I) {
-    _cam->initialize(width(),height(),true);
-  }
+//  if(ke->key()==Qt::Key_I) {
+//    _cam->initialize(width(),height(),true);
+//  }
   
   // // key f: compute FPS
   // if(ke->key()==Qt::Key_F) {
@@ -448,7 +455,8 @@ void Viewer::initializeGL() {
   }
 
   // init OpenGL settings
-  glClearColor(69.0/255.0, 155.0/255.0, 230.0/255.0,1.0);
+//  glClearColor(69.0/255.0, 155.0/255.0, 230.0/255.0,1.0);
+  glClearColor(0/255.0, 191.0/255.0, 255.0/255.0,1.0);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_TEXTURE_2D);
   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);

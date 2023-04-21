@@ -71,7 +71,9 @@ class Viewer : public QGLWidget {
 
   float _y;
   float temps;
+  bool _temps_moving;
   float _speed_y;
+  bool _moving;
   float riverFlow(float t);
 
   float _camX;
